@@ -28,7 +28,7 @@
 #define BRIGHTNESS  255
 #endif
 
-#define TINY_GSM_YIELD_MS 0
+#define TINY_GSM_YIELD_MS 100
 #define TINY_GSM_RX_BUFFER  1024U
 
 #include <Arduino.h>
@@ -41,8 +41,6 @@ constexpr char apn[] = "hologram";
 constexpr char gprsUser[] = "";
 constexpr char gprsPass[] = "";
 int cell_connect_count = 0;
-// DO NOT CHANGE THIS, CATASTROPHIC FAILURE
-const char* GSM_PIN = "1234";
 
 // Setup checks
 bool check_cell = false;
@@ -290,12 +288,30 @@ void setup()
     int status = modem.getSimStatus();
     log_d("SIM Status: %s", String(status));
     // Verbose error messages
-    //modem.sendAT(GF("+CMEE=2"));
+    modem.sendAT(GF("+CMEE=2"));
+    modem.waitResponse();
+
+    // Unlock a SIM PUK request
+    //modem.sendAT(GF("+CPIN=23513244,1234"));
+    //modem.waitResponse();
+    // Status of SIM LOCK
+    //modem.sendAT(GF("+CLCK=\"SC\",2"));
+    //modem.waitResponse();
+    // Turn off SIM PIN
+    //modem.sendAT(GF("+CLCK=\"SC\",0,\"1234\""));
     //modem.waitResponse();
 
     String _iccid = modem.getSimCCID();
     log_i("SIMICCID|||%s|||", _iccid.c_str());
-    delay(5000);
+    
+    // https://www.dragino.com/downloads/downloads/datasheet/other_vendors/BG95/Software/Quectel_BG95&BG77&BG600L_Series_QuecCell_Application_Note_V1.0.pdf
+    modem.sendAT(GF("+QENG=?"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+QENG=\"servingcell\""));
+    modem.waitResponse();
+
+    delay(15000);
 
     bool _cell = c_connect();
     log_d("After cell");
