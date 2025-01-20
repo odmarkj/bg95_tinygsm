@@ -28,7 +28,7 @@
 #define BRIGHTNESS  255
 #endif
 
-#define TINY_GSM_YIELD_MS 100
+#define TINY_GSM_YIELD_MS 50
 #define TINY_GSM_RX_BUFFER  1024U
 
 #include <Arduino.h>
@@ -174,21 +174,16 @@ bool c_connect()
 
     cell_connect_count += 1;
 
-    if (cell_connect_count == 1){
-        bool _remove_rplmn = removeRPLMN();
-        if (!_remove_rplmn){
-            log_d("Could not remove stored network.");
-            return false;
-        }else{
-            set_led_color("yellow");
-            delay(1000);
-        }
-    }
-
-    if (disable_cell) {
-        log_d("Cell disabled via setting.");
-        return false;
-    }
+    //if (cell_connect_count == 1){
+    //    bool _remove_rplmn = removeRPLMN();
+    //    if (!_remove_rplmn){
+    //        log_d("Could not remove stored network.");
+    //        return false;
+    //    }else{
+    //        set_led_color("yellow");
+    //        delay(1000);
+    //    }
+    //}
 
     set_led_color("white");
 
@@ -278,18 +273,60 @@ void setup()
 
     delay(6000);
 
-    log_d("Initializing modem...");
-    modem.init();
-    //log_d("Restarting modem");
-    //modem.restart();
+    //log_d("Initializing modem...");
+    //modem.init();
+    log_d("Restarting modem");
+    modem.restart();
 
     String modemInfo = modem.getModemInfo();
     log_d("Modem Info: %s", modemInfo);
     int status = modem.getSimStatus();
     log_d("SIM Status: %s", String(status));
+
+    bool _set_apn = modem.gprsConnect(apn);
+    log_d("Setting APN");
+
+    bool _remove_rplmn = removeRPLMN();
+    log_d("Removing any stored entries for networks.");
+
     // Verbose error messages
     modem.sendAT(GF("+CMEE=2"));
     modem.waitResponse();
+
+    modem.sendAT(GF("+QCFG=\"BAND\""));
+    modem.waitResponse();
+    
+    modem.sendAT(GF("+QCFG=\"nwscanmode\""));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+QCFG=\"nwscanseq\""));
+    modem.waitResponse(10000L);
+
+    // This doesn't take affect until a restart
+    // Configure the RAT search sequence in the following order: LTE Cat M1 -> GSM -> LTE Cat NB1.
+    modem.sendAT(GF("+QCFG=\"nwscanseq\",020103,1"));
+    modem.waitResponse(10000L);
+
+    modem.sendAT(GF("+QCFG=\"nwscanseq\""));
+    modem.waitResponse(10000L);
+
+    modem.sendAT(GF("+COPS=0"));
+    modem.waitResponse();
+
+    //modem.sendAT(GF("+CMNB=?"));
+    //modem.waitResponse();
+
+    //modem.sendAT(GF("+CMNB?"));
+    //modem.waitResponse();
+
+    //modem.sendAT(GF("+CDGCONT?"));
+    //modem.waitResponse();
+
+    //Set preferred mode to CAT-M
+    //AT+CMNB=1
+
+    //modem.sendAT(GF("+QPINC?"));
+    //modem.waitResponse();
 
     // Unlock a SIM PUK request
     //modem.sendAT(GF("+CPIN=23513244,1234"));
@@ -309,6 +346,50 @@ void setup()
     modem.waitResponse();
 
     modem.sendAT(GF("+QENG=\"servingcell\""));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+QCFG=\"iotopmode\""));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+QCFG=\"servicedomain\""));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CREG=1"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CREG?"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CGREG=1"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CGREG?"));
+    modem.waitResponse();
+
+    // Returning "no network service"
+    //modem.sendAT(GF("+CGATT=1"));
+    //modem.waitResponse(180000L);
+    
+    modem.sendAT(GF("+CGATT?"));
+    modem.waitResponse();
+    
+    modem.sendAT(GF("+COPS?"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CFUN?"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CGREG?"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CREG?"));
+    modem.waitResponse();
+    
+    modem.sendAT(GF("+COPS=?"));
+    modem.waitResponse(360000L);
+
+    // Force TMOBILE, to avoid Verizon, which is not allowed currently
+    modem.sendAT(GF("+COPS=0,0,\"TMO\""));
     modem.waitResponse();
 
     delay(15000);
