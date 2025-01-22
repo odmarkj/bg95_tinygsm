@@ -273,45 +273,57 @@ void setup()
 
     delay(6000);
 
+    // Factory default
+    bool ret = modem.factoryDefault();
+    log_d("Modem factory default: %s", ret ? "OK" : "fail");
+
+    modem.sendAT(GF("+QPRTPARA=1"));
+    modem.waitResponse(30000L);
+    
+    modem.sendAT(GF("+QPRTPARA=3"));
+    modem.waitResponse(30000L);
+
     //log_d("Initializing modem...");
     //modem.init();
     log_d("Restarting modem");
     modem.restart();
 
+    delay(6000);
+
     String modemInfo = modem.getModemInfo();
-    log_d("Modem Info: %s", modemInfo);
+    log_d("Modem Info: %s", modemInfo.c_str());
     int status = modem.getSimStatus();
     log_d("SIM Status: %s", String(status));
 
-    bool _set_apn = modem.gprsConnect(apn);
-    log_d("Setting APN");
+    //bool _set_apn = modem.gprsConnect(apn);
+    //log_d("Setting APN");
 
     bool _remove_rplmn = removeRPLMN();
     log_d("Removing any stored entries for networks.");
 
     // Verbose error messages
-    modem.sendAT(GF("+CMEE=2"));
-    modem.waitResponse();
+    //modem.sendAT(GF("+CMEE=2"));
+    //modem.waitResponse();
 
-    modem.sendAT(GF("+QCFG=\"BAND\""));
-    modem.waitResponse();
+    //modem.sendAT(GF("+QCFG=\"BAND\""));
+    //modem.waitResponse();
     
-    modem.sendAT(GF("+QCFG=\"nwscanmode\""));
-    modem.waitResponse();
+    //modem.sendAT(GF("+QCFG=\"nwscanmode\""));
+    //modem.waitResponse();
 
-    modem.sendAT(GF("+QCFG=\"nwscanseq\""));
-    modem.waitResponse(10000L);
+    //modem.sendAT(GF("+QCFG=\"nwscanseq\""));
+    //modem.waitResponse(10000L);
 
     // This doesn't take affect until a restart
     // Configure the RAT search sequence in the following order: LTE Cat M1 -> GSM -> LTE Cat NB1.
-    modem.sendAT(GF("+QCFG=\"nwscanseq\",020103,1"));
-    modem.waitResponse(10000L);
+    //modem.sendAT(GF("+QCFG=\"nwscanseq\",020103,1"));
+    //modem.waitResponse(10000L);
 
-    modem.sendAT(GF("+QCFG=\"nwscanseq\""));
-    modem.waitResponse(10000L);
+    //modem.sendAT(GF("+QCFG=\"nwscanseq\""));
+    //modem.waitResponse(10000L);
 
-    modem.sendAT(GF("+COPS=0"));
-    modem.waitResponse();
+    //modem.sendAT(GF("+COPS=0"));
+    //modem.waitResponse();
 
     //modem.sendAT(GF("+CMNB=?"));
     //modem.waitResponse();
@@ -342,57 +354,118 @@ void setup()
     log_i("SIMICCID|||%s|||", _iccid.c_str());
     
     // https://www.dragino.com/downloads/downloads/datasheet/other_vendors/BG95/Software/Quectel_BG95&BG77&BG600L_Series_QuecCell_Application_Note_V1.0.pdf
-    modem.sendAT(GF("+QENG=?"));
-    modem.waitResponse();
+    //modem.sendAT(GF("+QENG=?"));
+    //modem.waitResponse();
 
-    modem.sendAT(GF("+QENG=\"servingcell\""));
-    modem.waitResponse();
+    //modem.sendAT(GF("+QENG=\"servingcell\""));
+    //modem.waitResponse();
 
-    modem.sendAT(GF("+QCFG=\"iotopmode\""));
-    modem.waitResponse();
+    //modem.sendAT(GF("+QCFG=\"iotopmode\""));
+    //modem.waitResponse();
 
-    modem.sendAT(GF("+QCFG=\"servicedomain\""));
-    modem.waitResponse();
+    //modem.sendAT(GF("+QCFG=\"servicedomain\""));
+    //modem.waitResponse();
 
-    modem.sendAT(GF("+CREG=1"));
-    modem.waitResponse();
+    //modem.sendAT(GF("+CREG=1"));
+    //modem.waitResponse();
 
-    modem.sendAT(GF("+CREG?"));
-    modem.waitResponse();
+    //modem.sendAT(GF("+CREG?"));
+    //modem.waitResponse();
 
-    modem.sendAT(GF("+CGREG=1"));
-    modem.waitResponse();
+    //modem.sendAT(GF("+CGREG=1"));
+    //modem.waitResponse();
 
-    modem.sendAT(GF("+CGREG?"));
-    modem.waitResponse();
+    //modem.sendAT(GF("+CGREG?"));
+    //modem.waitResponse();
 
     // Returning "no network service"
     //modem.sendAT(GF("+CGATT=1"));
     //modem.waitResponse(180000L);
     
-    modem.sendAT(GF("+CGATT?"));
-    modem.waitResponse();
+    //modem.sendAT(GF("+CGATT?"));
+    //modem.waitResponse();
     
-    modem.sendAT(GF("+COPS?"));
+    //modem.sendAT(GF("+COPS?"));
+    //modem.waitResponse();
+
+    //modem.sendAT(GF("+CFUN?"));
+    //modem.waitResponse();
+
+    //modem.sendAT(GF("+CGREG?"));
+    //modem.waitResponse();
+
+    //modem.sendAT(GF("+CREG?"));
+    //modem.waitResponse();
+    
+    //modem.sendAT(GF("+COPS=?"));
+    //modem.waitResponse(360000L);
+
+    modem.sendAT(GF("+ATI"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CGMI"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CGMM"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+GMM"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CPIN?"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CCID"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CRSM=176,28539,0,0,12"));
     modem.waitResponse();
 
     modem.sendAT(GF("+CFUN?"));
     modem.waitResponse();
 
-    modem.sendAT(GF("+CGREG?"));
+    modem.sendAT(GF("+CSQ"));
     modem.waitResponse();
 
     modem.sendAT(GF("+CREG?"));
     modem.waitResponse();
-    
-    modem.sendAT(GF("+COPS=?"));
-    modem.waitResponse(360000L);
 
-    // Force TMOBILE, to avoid Verizon, which is not allowed currently
-    modem.sendAT(GF("+COPS=0,0,\"TMO\""));
+    modem.sendAT(GF("+CGREG?"));
     modem.waitResponse();
 
-    delay(15000);
+    modem.sendAT(GF("+CEREG?"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CGDCONT?"));
+    modem.waitResponse();
+
+    modem.sendAT(GF("+CGACT?"));
+    modem.waitResponse();
+
+    // Force TMOBILE, to avoid Verizon, which is not allowed currently
+    //modem.sendAT(GF("+COPS=0,0,\"TMO\""));
+    //modem.waitResponse();
+
+    // Force AT&T
+    //modem.sendAT(GF("+COPS=2,0,\"310410\""));
+    //modem.waitResponse();
+
+    //at+cops=1,2,"310260",8 # T-Mobile
+    //at+cops=1,2,"310410",8 # AT&T
+    //at+cops=1,2,"311480",8 # Verizon
+    //at+cops=0,0 # To set it back to automatic selection
+
+    modem.sendAT(GF("+COPS?"));
+    modem.waitResponse(10000L);
+    
+    modem.sendAT(GF("+COPS=0,0"));
+    modem.waitResponse(30000L);
+
+    modem.sendAT(GF("+COPS?"));
+    modem.waitResponse(10000L);
+
+    modem.sendAT(GF("+COPS=?"));
+    modem.waitResponse(300000L);
 
     bool _cell = c_connect();
     log_d("After cell");
@@ -403,4 +476,7 @@ void setup()
     } else {
         log_d("CONNECTION FAILED");
     }
+
+    modem.sendAT(GF("+COPS?"));
+    modem.waitResponse();
 }
